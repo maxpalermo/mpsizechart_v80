@@ -32,7 +32,9 @@ class LoadClass
     public function load($class, $path = '')
     {
         if ($path) {
-            $path = rtrim(trim($path), '/') . '/src/';
+            $path = rtrim(trim($path), '/') . DIRECTORY_SEPARATOR;
+        } else {
+            $path = $this->module->getLocalPath() . 'src/';
         }
 
         $module = $this->module;

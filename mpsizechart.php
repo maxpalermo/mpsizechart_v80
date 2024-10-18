@@ -51,7 +51,7 @@ class MpSizeChart extends Module
 
         parent::__construct();
 
-        (new LoadClass($this))->load('MpSizeChartModelAttachments', 'models');
+        (new LoadClass($this))->load('MpSizeChartModelAttachments', 'src/models');
 
         $this->displayName = $this->l('MP Tabella delle Taglie');
         $this->description = $this->l('Con questo modulo puoi visualizzare le informazioni sulle taglie tramite PDF.');
