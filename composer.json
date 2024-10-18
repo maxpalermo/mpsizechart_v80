@@ -1,0 +1,28 @@
+{
+    "name": "mpsoft/mpsizechart",
+    "description": "Mostra un PDF delle taglie nella pagina prodotti",
+    "authors": [
+        {
+            "name": "Massimiliano Palermo",
+            "email": "maxx.palermo@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1.0",
+        "phpoffice/phpspreadsheet": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "MpSoft\\MpSizeChart\\": "src/",
+            "MpSoft\\MpSizeChart\\Plugins\\": "plugins/"
+        },
+        "classmap": [],
+        "exclude-from-classmap": [],
+        "files": []
+    },
+    "config": {
+        "preferred-install": "dist",
+        "prepend-autoloader": false
+    },
+    "type": "prestashop-module"
+}
