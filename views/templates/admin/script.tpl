@@ -125,8 +125,18 @@
         });
     }
 
+    function setDeleteButton() {
+        $("a.delete").each(function() {
+            let onclick = $(this).attr("onclick");
+            let id_product = onclick.match(/id_product=(\d+)/)[1];
+            $(this).removeAttr("onclick");
+            $(this).data("id_product", id_product);
+        });
+    }
+
     $(document).ready(function() {
         setCollapsePanel();
+        setDeleteButton();
 
 
         $(".edit.btn.btn-default").on("click", function(e) {
@@ -150,9 +160,14 @@
             return false;
         });
 
-        $("a.delete").on("click", function() {
+        $("a.delete").on("click", function(e) {
+            e.preventDefault();
+            if (!confirm("Sei sicuro di voler eliminare l'allegato?")) {
+                return false;
+            }
+
             let urlParams = new URLSearchParams(this.href.split('?')[1]);
-            let id_product = urlParams.get('id_product');
+            let id_product = $(this).data("id_product");
             let idx = getIndexBySearchElement('productFilter_pl!name');
             let product_name = getCellValue(this, idx + 1);
             let idx2 = getIndexByCellTitle('File');

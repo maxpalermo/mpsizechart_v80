@@ -383,6 +383,10 @@ class AdminMpSizeChartController extends ModuleAdminController
 
     public function formatBytes($value)
     {
+        if (!$value) {
+            return '--';
+        }
+
         return Tools::formatBytes((int) $value);
     }
 
