@@ -163,7 +163,7 @@ class MpSizeChart extends Module implements WidgetInterface
 
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCSS($this->getLocalPath() . 'views/css/icon-menu.css');
+        // $this->context->controller->addCSS($this->getLocalPath() . 'views/css/icon-menu.css');
         // $this->context->controller->registerStylesheet('mpsizechart-icon-menu', 'module:mpsizechart/views/css/icon-menu.css');
     }
 

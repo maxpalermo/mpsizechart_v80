@@ -115,7 +115,20 @@
         }
     }
 
+    function setCollapsePanel() {
+        $("#configuration_form .panel .form-wrapper").addClass("collapse");
+        $("#configuration_form .panel .panel-heading").append(
+            '<span class="material-icons pull-right" style="cursor: pointer;">expand_more</span>'
+        );
+        $("#configuration_form .panel .panel-heading").on("click", function() {
+            $(this).next().toggleClass("collapse");
+        });
+    }
+
     $(document).ready(function() {
+        setCollapsePanel();
+
+
         $(".edit.btn.btn-default").on("click", function(e) {
             e.preventDefault();
             let urlParams = new URLSearchParams(this.href.split('?')[1]);
