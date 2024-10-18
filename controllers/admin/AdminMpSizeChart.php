@@ -97,7 +97,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $this->page_header_toolbar_btn['remove_orphans'] = [
             'href' => $this->context->link->getAdminLink($this->controller_name, true) . '&action=remove_orphans',
             'desc' => $this->trans('Rimuovi i file orfani'),
-            'icon' => 'process-icon-trash text-danger',
+            'icon' => 'process-icon-delete text-danger',
         ];
 
         $this->page_header_toolbar_btn['refresh_data'] = [
