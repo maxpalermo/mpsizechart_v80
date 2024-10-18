@@ -1,4 +1,6 @@
 <?php
+use MpSoft\MpSizeChart\helpers\LoadClass;
+
 /**
  * Copyright since 2007 PrestaShop SA and Contributors
  * PrestaShop is an International Registered Trademark & Property of PrestaShop SA
@@ -23,12 +25,12 @@ if (!defined('_PS_VERSION_')) {
 
 require_once dirname(__FILE__) . '/vendor/autoload.php';
 
-use MpSoft\MpSizeChart\helpers\LoadClass;
 use MpSoft\MpSizeChart\helpers\MpSizeChartGetAttachment;
 use MpSoft\MpSizeChart\install\InstallMenu;
 use MpSoft\MpSizeChart\install\InstallTable;
+use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 
-class MpSizeChart extends Module
+class MpSizeChart extends Module implements WidgetInterface
 {
     protected $config_form = false;
     protected $adminClassName = 'AdminMpSizeChart';
@@ -62,32 +64,93 @@ class MpSizeChart extends Module
         $this->id_shop = (int) Context::getContext()->shop->id;
     }
 
+    public function renderWidget($hookName, array $configuration)
+    {
+        if (!$this->isCached('module:mpsizechart/views/templates/front/displayButton.tpl', $this->getCacheId('mpsizechart'))) {
+            $this->smarty->assign($this->getWidgetVariables($hookName, $configuration));
+        }
+
+        if ($hookName === 'displayProductPriceBlock') {
+            return $this->fetch('module:mpsizechart/views/templates/front/displayButton.tpl');
+        }
+
+        if (!isset($configuration['product'])) {
+            return;
+        }
+
+        $id_product = (int) $configuration['product']['id_product'];
+        $filename_url = MpSizeChartGetAttachment::getAttachmentUrl($id_product);
+        $filename = basename($filename_url);
+
+        $file_location = _PS_UPLOAD_DIR_ . 'mpsizechart/' . $filename;
+        if (!file_exists($file_location)) {
+            return;
+        }
+
+        $this->smarty->assign([
+            'id_product' => $id_product,
+            'url' => $filename_url,
+        ]);
+
+        return $this->fetch('module:mpsizechart/views/templates/front/displayButton.tpl');
+    }
+
+    public function getWidgetVariables($hookName, array $configuration)
+    {
+        if (!isset($configuration['product'])) {
+            return [];
+        }
+
+        if ($hookName === 'displayProductPriceBlock') {
+            return [];
+        }
+
+        $id_product = (int) $configuration['product']['id_product'];
+        $filename_url = MpSizeChartGetAttachment::getAttachmentUrl($id_product);
+        $filename = basename($filename_url);
+
+        $file_location = _PS_UPLOAD_DIR_ . 'mpsizechart/' . $filename;
+        if (!file_exists($file_location)) {
+            return [];
+        }
+
+        return [
+            'id_product' => $id_product,
+            'url' => $filename_url,
+        ];
+    }
+
     public function install()
     {
         $installMenu = new InstallMenu($this);
         $installTable = new InstallTable($this);
 
-        $res = parent::install()
-            && $this->registerHook('displayAfterDescriptionShort')
-            && $this->registerHook('actionAdminControllerSetMedia')
-            && $this->registerHook('actionFrontControllerSetMedia')
-            && $installMenu->installMenu(
-                $this->adminClassName,
-                'MP Tabella delle Taglie',
-                'AdminCatalog',
-                'straighten',
-                'MpSizeChart'
-            )
-            && $installTable->installFromSqlFile('product_size_chart_attachments');
+        $hooks = [
+            'displayAfterDescriptionShort',
+            'actionAdminControllerSetMedia',
+            'actionFrontControllerSetMedia',
+            'displayLeftColumnProduct',
+            'displayProductPriceBlock',
+            'displayRightColumnProduct',
+        ];
+        $res = parent::install() && $this->registerHook($hooks);
 
-        if ($res) {
+        $menu = $installMenu->installMenu(
+            $this->adminClassName,
+            'MP Tabella delle Taglie',
+            'AdminCatalog',
+            'straighten',
+        );
+        $table = $installTable->installFromSqlFile('product_size_chart_attachments');
+
+        if ($res && $menu && $table) {
             $upload_dir = _PS_UPLOAD_DIR_ . 'mpsizechart';
             if (!file_exists($upload_dir)) {
                 @mkdir($upload_dir, 0777, true);
             }
         }
 
-        return $res;
+        return $res && $menu && $table;
     }
 
     public function uninstall()
@@ -100,8 +163,8 @@ class MpSizeChart extends Module
 
     public function hookActionAdminControllerSetMedia()
     {
-        // $this->context->controller->addCSS($this->getLocalPath() . 'views/css/icon-menu.css');
-        $this->context->controller->registerStylesheet('mpsizechart-icon-menu', 'module:mpsizechart/views/css/icon-menu.css');
+        $this->context->controller->addCSS($this->getLocalPath() . 'views/css/icon-menu.css');
+        // $this->context->controller->registerStylesheet('mpsizechart-icon-menu', 'module:mpsizechart/views/css/icon-menu.css');
     }
 
     public function hookActionFrontControllerSetMedia()
@@ -109,14 +172,30 @@ class MpSizeChart extends Module
         $this->context->controller->registerJavascript('mpsizechart-button', 'module:mpsizechart/views/js/button-script.js');
     }
 
+    public function hookDisplayProductPriceBlock($params)
+    {
+        if (isset($params['type']) && $params['type'] === 'after_price') {
+            return $this->hookDispatch((int) $params['product']->id);
+        }
+    }
+
+    public function hookDisplayRightColumnProduct($params)
+    {
+        return $this->hookDispatch($params);
+    }
+
+    public function hookDisplayLeftColumnProduct($params)
+    {
+        return $this->hookDispatch($params);
+    }
+
     public function hookDisplayAfterDescriptionShort($params)
     {
         return $this->hookDispatch($params);
     }
 
-    public function hookDispatch($params)
+    public function hookDispatch($id_product)
     {
-        $id_product = (int) $params['product']->id;
         $filename_url = MpSizeChartGetAttachment::getAttachmentUrl($id_product);
         $filename = basename($filename_url);
 
@@ -131,6 +210,8 @@ class MpSizeChart extends Module
             [
                 'id_product' => $id_product,
                 'url' => $filename_url,
+                'pdf' => $this->context->link->getModuleLink('mpsizechart', 'AjaxDispatch', ['id_product' => $id_product, 'action' => 'getPdf']),
+                'class' => 'mpsizechart-button btn-warning text-white',
             ]
         );
 

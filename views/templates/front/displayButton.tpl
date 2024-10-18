@@ -18,8 +18,8 @@
  *}
 
 <div class="panel" style='text-align: center; margin-top: 1rem; margin-bottom: 1rem;'>
-    <a class="btn btn-default label label-warning" data-id_product="id_product" href="{$url}" id='btn-show-pdf' target="_blank" style="min-width: 220px; font-size: 2.0rem;">
-        <i class="icon icon-table" style='color: #fefefe; text-shadow: 1px 1px 3px #404040;'></i>
+    <a class="btn btn-default {$class}" data-id_product="id_product" href="{$pdf}" id='btn-show-pdf' target="_blank" style="min-width: 220px; font-size: 2.0rem;">
+        <i class="material-icons mr-1" style="font-size: 2rem;">picture_as_pdf</i>
         <span class="bold" style="margin-left: 1rem;">{l s='Guida taglie' mod='mpsizechart'}</span>
     </a>
 </div>

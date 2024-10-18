@@ -17,11 +17,16 @@
  * @copyright Since 2016 Massimiliano Palermo
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License version 3.0
  */
+
+use MpSoft\MpSizeChart\helpers\LoadClass;
+
 class MpSizeChartAjaxDispatchModuleFrontController extends ModuleFrontController
 {
     public function initContent()
     {
         parent::initContent();
+
+        (new LoadClass($this->module))->load('MpSizeChartModelAttachments', 'src/models');
 
         $this->ajax = true;
 
@@ -40,19 +45,24 @@ class MpSizeChartAjaxDispatchModuleFrontController extends ModuleFrontController
         exit(json_encode($params));
     }
 
-    public function getChart()
+    public function getPdf()
     {
-        $id_product = Tools::getValue('id_product');
-        $id_product_attribute = Tools::getValue('id_product_attribute');
+        $id_product = (int) Tools::getValue('id_product');
+        $model = new MpSizeChartModelAttachments($id_product);
+        if (!Validate::isLoadedObject($model)) {
+            $this->response(['error' => 'Model not found']);
+        }
 
-        $chart = new MpSizeChart();
-        $chart->id_product = $id_product;
-        $chart->id_product_attribute = $id_product_attribute;
+        $filename = $model->file_name;
+        $path = _PS_UPLOAD_DIR_ . 'mpsizechart/' . $filename;
+        $content = Tools::file_get_contents($path);
 
-        $this->context->smarty->assign([
-            'chart' => $chart->getChart(),
-        ]);
-
-        $this->setTemplate('module:mpsizechart/views/templates/front/ajax_chart.tpl');
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+        header('Content-Length: ' . Tools::strlen($content));
+        header('Content-Transfer-Encoding: binary');
+        header('Accept-Ranges: bytes');
+        echo $content;
+        exit;
     }
 }

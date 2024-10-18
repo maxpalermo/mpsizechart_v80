@@ -1,30 +1,25 @@
 <?php
 /**
- * 2017 mpSOFT
+ * Copyright since 2007 PrestaShop SA and Contributors
+ * PrestaShop is an International Registered Trademark & Property of PrestaShop SA
  *
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
+ * This source file is subject to the Academic Free License version 3.0
+ * that is bundled with this package in the file LICENSE.md.
  * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
+ * https://opensource.org/licenses/AFL-3.0
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
  * to license@prestashop.com so we can send you a copy immediately.
  *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
- * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to http://www.prestashop.com for more information.
- *
- *  @author    mpSOFT <info@mpsoft.it>
- *  @copyright 2017 mpSOFT Massimiliano Palermo
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of mpSOFT
+ * @author    Massimiliano Palermo <maxx.palermo@gmail.com>
+ * @copyright Since 2016 Massimiliano Palermo
+ * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License version 3.0
  */
 
-require_once _PS_MODULE_DIR_ . 'mpsizechart/helpers/LoadClass.php';
+use MpSoft\MpSizeChart\helpers\MpSizeChartGetAttachment;
+use MpSoft\MpSizeChart\helpers\MpSizeChartUploadFile;
 
 class AdminMpSizeChartController extends ModuleAdminController
 {
@@ -37,6 +32,7 @@ class AdminMpSizeChartController extends ModuleAdminController
 
     public function __construct()
     {
+        $this->translator = Context::getContext()->getTranslator();
         $this->bootstrap = true;
         $this->context = Context::getContext();
         $this->token = Tools::getValue('token', Tools::getAdminTokenLite($this->className));
@@ -48,8 +44,8 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->bulk_actions = [
             'delete_pdf' => [
-                'text' => $this->l('Elimina il PDF allegato dai prodotti selezionati'),
-                'confirm' => $this->l('Confermare la cancellazione dei PDF selezionati?'),
+                'text' => $this->trans('Elimina il PDF allegato dai prodotti selezionati'),
+                'confirm' => $this->trans('Confermare la cancellazione dei PDF selezionati?'),
                 'icon' => 'icon-trash',
                 'href' => $this->context->link->getAdminLink($this->controller_name, true) . '&action=delete',
             ],
@@ -59,13 +55,11 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->id_lang = (int) ContextCore::getContext()->language->id;
         $this->id_shop = (int) ContextCore::getContext()->shop->id;
-
-        (new LoadClass($this->module))->load('MpSizeChartUploadFile', 'helpers');
     }
 
-    public function setMedia()
+    public function setMedia($isNewTheme = false)
     {
-        parent::setMedia();
+        parent::setMedia($isNewTheme);
         $this->addJqueryUI('ui.dialog');
         $this->addJqueryUI('ui.progressbar');
         $this->addJqueryUI('ui.draggable');
@@ -78,7 +72,7 @@ class AdminMpSizeChartController extends ModuleAdminController
     public function response($data)
     {
         header('Content-Type: application/json');
-        exit(Tools::jsonEncode($data));
+        exit(json_encode($data));
     }
 
     public function initContent()
@@ -96,31 +90,31 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->page_header_toolbar_btn['new'] = [
             'href' => 'javascript:$("#desc-product-new").click();',
-            'desc' => $this->l('Aggiungi un allegato'),
+            'desc' => $this->trans('Aggiungi un allegato'),
             'icon' => 'process-icon-new',
         ];
 
         $this->page_header_toolbar_btn['remove_orphans'] = [
             'href' => $this->context->link->getAdminLink($this->controller_name, true) . '&action=remove_orphans',
-            'desc' => $this->l('Rimuovi i file orfani'),
+            'desc' => $this->trans('Rimuovi i file orfani'),
             'icon' => 'process-icon-trash text-danger',
         ];
 
         $this->page_header_toolbar_btn['refresh_data'] = [
             'href' => $this->context->link->getAdminLink($this->controller_name, true) . '&action=refresh_data',
-            'desc' => $this->l('Aggiorna le informazioni della tabella'),
+            'desc' => $this->trans('Aggiorna le informazioni della tabella'),
             'icon' => 'process-icon-refresh',
-            'confirm' => $this->l('Sei sicuro di voler aggiornare la tabella? Saranno sovrascritti tutti i dati delle immagini.'),
+            'confirm' => $this->trans('Sei sicuro di voler aggiornare la tabella? Saranno sovrascritti tutti i dati delle immagini.'),
         ];
 
         $this->page_header_toolbar_btn['ok'] = [
             'href' => 'javascript:checkAll();',
-            'desc' => $this->l('Seleziona tutto'),
+            'desc' => $this->trans('Seleziona tutto'),
             'icon' => 'process-icon-ok',
         ];
         $this->page_header_toolbar_btn['cancel'] = [
             'href' => 'javascript:uncheckAll();',
-            'desc' => $this->l('Deseleziona tutto'),
+            'desc' => $this->trans('Deseleziona tutto'),
             'icon' => 'process-icon-cancel',
         ];
     }
@@ -130,12 +124,12 @@ class AdminMpSizeChartController extends ModuleAdminController
         parent::initToolbar();
         $this->toolbar_btn['ok'] = [
             'href' => 'javascript:checkAll();',
-            'desc' => $this->l('Seleziona tutto'),
+            'desc' => $this->trans('Seleziona tutto'),
             'icon' => 'process-icon-ok',
         ];
         $this->toolbar_btn['cancel'] = [
             'href' => 'javascript:uncheckAll();',
-            'desc' => $this->l('Deseleziona tutto'),
+            'desc' => $this->trans('Deseleziona tutto'),
             'icon' => 'process-icon-cancel',
         ];
     }
@@ -175,12 +169,12 @@ class AdminMpSizeChartController extends ModuleAdminController
         }
 
         if ($total) {
-            $this->confirmations[] = sprintf($this->l('Rimossi %d file orfani'), $total);
+            $this->confirmations[] = sprintf($this->trans('Rimossi %d file orfani'), $total);
 
             return true;
         }
 
-        $this->warnings[] = $this->l('Nessun file orfano trovato');
+        $this->warnings[] = $this->trans('Nessun file orfano trovato');
     }
 
     public function processRefreshData()
@@ -213,7 +207,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                         $total++;
                     } catch (\Throwable $th) {
                         $this->errors[] = sprintf(
-                            $this->l('Errore durante l\'aggiornamento del file %s per il prodotto %s: %s'),
+                            $this->trans('Errore durante l\'aggiornamento del file %s per il prodotto %s: %s'),
                             $filename,
                             $product->reference,
                             $th->getMessage()
@@ -221,7 +215,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                     }
                 } else {
                     $this->warnings[] = sprintf(
-                        $this->l('File %s non trovato per il prodotto %s'),
+                        $this->trans('File %s non trovato per il prodotto %s'),
                         $filename,
                         $product->reference
                     );
@@ -229,7 +223,7 @@ class AdminMpSizeChartController extends ModuleAdminController
             }
         }
 
-        $this->confirmations[] = sprintf($this->l('Aggiornati %d prodotti'), $total);
+        $this->confirmations[] = sprintf($this->trans('Aggiornati %d prodotti'), $total);
     }
 
     public function processConvertTable()
@@ -249,7 +243,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $directory = $this->module->getLocalPath() . 'upload/';
 
         if (!file_exists($directory)) {
-            $this->warnings[] = $this->l('Directory UPLOAD non esistente. Non è possibile effettuare la conversione.');
+            $this->warnings[] = $this->trans('Directory UPLOAD non esistente. Non è possibile effettuare la conversione.');
 
             return false;
         }
@@ -307,7 +301,7 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->confirmations[] =
             sprintf(
-                $this->l('Convertiti %d file, per un totale di : %s, eliminati %d file, per un totale di : %s'),
+                $this->trans('Convertiti %d file, per un totale di : %s, eliminati %d file, per un totale di : %s'),
                 count($result),
                 Tools::formatBytes($totalSizeMoved),
                 $totalFiles - count($result),
@@ -323,7 +317,7 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->fields_list = [
             'image' => [
-                'title' => $this->l('Immagine'),
+                'title' => $this->trans('Immagine'),
                 'align' => 'center',
                 'orderby' => false,
                 'search' => false,
@@ -332,20 +326,20 @@ class AdminMpSizeChartController extends ModuleAdminController
                 'float' => true,
             ],
             'id_product' => [
-                'title' => $this->l('Id'),
+                'title' => $this->trans('Id'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
             ],
             'name' => [
-                'title' => $this->l('Nome'),
+                'title' => $this->trans('Nome'),
                 'filter_key' => 'pl!name',
             ],
             'reference' => [
-                'title' => $this->l('Riferimento'),
+                'title' => $this->trans('Riferimento'),
                 'filter_key' => 'p!reference',
             ],
             'price' => [
-                'title' => $this->l('Prezzo'),
+                'title' => $this->trans('Prezzo'),
                 'type' => 'price',
                 'currency' => true,
                 'align' => 'right',
@@ -353,31 +347,31 @@ class AdminMpSizeChartController extends ModuleAdminController
                 'class' => 'fixed-width-sm text-right',
             ],
             'active' => [
-                'title' => $this->l('Attivo'),
+                'title' => $this->trans('Attivo'),
                 'active' => 'status',
                 'type' => 'bool',
                 'align' => 'center',
                 'class' => 'fixed-width-sm',
             ],
             'file_name' => [
-                'title' => $this->l('File'),
+                'title' => $this->trans('File'),
                 'orderby' => false,
                 'search' => false,
                 'float' => true,
-                'class' => 'fixed-width-md text-center',
+                'class' => 'text-center',
                 'filter_key' => 'm!file_name',
                 'callback' => 'displayPdf',
                 'remove_onclick' => true,
             ],
             'file_size' => [
-                'title' => $this->l('Peso'),
+                'title' => $this->trans('Peso'),
                 'orderby' => false,
                 'search' => false,
-                'class' => 'fixed-width-md text-center',
+                'class' => 'fixed-width-md text-right',
                 'callback' => 'formatBytes',
             ],
             'file_type' => [
-                'title' => $this->l('Tipo'),
+                'title' => $this->trans('Tipo'),
                 'orderby' => false,
                 'search' => false,
                 'class' => 'fixed-width-md text-center',
@@ -394,11 +388,36 @@ class AdminMpSizeChartController extends ModuleAdminController
 
     public function displayPdf($value, $row)
     {
-        $url = Tools::getShopProtocol() . DIRECTORY_SEPARATOR
-        . Tools::getShopDomain() . $this->context->shop->getBaseURI()
-        . 'upload/mpsizechart/' . $value;
+        if ($value) {
+            $filepath = _PS_UPLOAD_DIR_ . 'mpsizechart/' . $value;
+            if (!file_exists($filepath)) {
+                $tpl = $this->context->smarty->createTemplate(
+                    'module:mpsizechart/views/templates/admin/pdf_no_link.tpl',
+                    $this->context->smarty
+                );
+                $tpl->assign(
+                    [
+                        'value' => $value,
+                    ]
+                );
 
-        return '<a class="badge badge-info" href="' . $url . '" target="_blank">' . $value . '</a>';
+                return $tpl->fetch();
+            }
+        }
+
+        $id_product = (int) $row['id_product'];
+        $tpl = $this->context->smarty->createTemplate(
+            'module:mpsizechart/views/templates/admin/pdf_link.tpl',
+            $this->context->smarty
+        );
+        $tpl->assign(
+            [
+                'url' => $this->context->link->getModuleLink('mpsizechart', 'AjaxDispatch', ['id_product' => $id_product, 'action' => 'getPdf']),
+                'value' => $value,
+            ]
+        );
+
+        return $tpl->fetch();
     }
 
     protected function initFormSearch()
@@ -413,13 +432,13 @@ class AdminMpSizeChartController extends ModuleAdminController
         $this->fields_form = [
             'form' => [
                 'legend' => [
-                    'title' => $this->l('Pannello di ricerca'),
+                    'title' => $this->trans('Pannello di ricerca'),
                     'icon' => 'icon-search',
                 ],
                 'input' => [
                     [
                         'type' => 'categories',
-                        'label' => $this->l('Seleziona le categorie'),
+                        'label' => $this->trans('Seleziona le categorie'),
                         'name' => 'categories',
                         'tree' => [
                             'id' => 'categories-tree',
@@ -432,7 +451,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                     ],
                     [
                         'type' => 'select',
-                        'label' => $this->l('Seleziona i Produttori'),
+                        'label' => $this->trans('Seleziona i Produttori'),
                         'name' => 'manufacturers',
                         'class' => 'chosen',
                         'options' => [
@@ -444,7 +463,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                     ],
                     [
                         'type' => 'select',
-                        'label' => $this->l('Seleziona i Fornitori'),
+                        'label' => $this->trans('Seleziona i Fornitori'),
                         'name' => 'suppliers',
                         'class' => 'chosen',
                         'options' => [
@@ -456,30 +475,30 @@ class AdminMpSizeChartController extends ModuleAdminController
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->l('Nome Prodotto'),
+                        'label' => $this->trans('Nome Prodotto'),
                         'name' => 'product_name',
                     ],
                     [
                         'type' => 'html',
-                        'label' => $this->l('cerca in'),
+                        'label' => $this->trans('cerca in'),
                         'name' => 'chk_search_in',
                         'html_content' => $this->getButtonsSearchIn(),
                     ],
                     [
                         'type' => 'switch',
-                        'label' => $this->l('Solo i prodotti con allegati'),
+                        'label' => $this->trans('Solo i prodotti con allegati'),
                         'name' => 'switch_only_attachments',
                         'is_bool' => true,
                         'values' => [
                             [
                                 'id' => 'chk_search_in',
                                 'value' => 1,
-                                'label' => $this->l('Yes'),
+                                'label' => $this->trans('Yes'),
                             ],
                             [
                                 'id' => 'chk_search_in',
                                 'value' => 0,
-                                'label' => $this->l('No'),
+                                'label' => $this->trans('No'),
                             ],
                         ],
                     ],
@@ -489,13 +508,13 @@ class AdminMpSizeChartController extends ModuleAdminController
                     ],
                 ],
                 'submit' => [
-                    'title' => $this->l('Cerca'),
+                    'title' => $this->trans('Cerca'),
                     'class' => 'btn btn-default pull-right',
                     'icon' => 'process-icon-search',
                 ],
                 'buttons' => [
                     [
-                        'title' => $this->l('Reset'),
+                        'title' => $this->trans('Reset'),
                         'class' => 'btn btn-default pull-left',
                         'name' => 'submitSearch',
                         'icon' => 'process-icon-cancel',
@@ -658,7 +677,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $id_product = (int) Tools::getValue('id_product', 0);
         $model = new MpSizeChartModelAttachments($id_product);
         if (!Validate::isLoadedObject($model)) {
-            $this->response(['result' => false, 'message' => $this->l('Allegato non trovato')]);
+            $this->response(['result' => false, 'message' => $this->trans('Allegato non trovato')]);
         }
         $result = $model->delete();
         $this->response(['result' => $result]);
@@ -706,7 +725,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                 $this->response(
                     [
                         'result' => true,
-                        'message' => $this->l('File caricato correttamente'),
+                        'message' => $this->trans('File caricato correttamente'),
                         'file' => [
                             'name' => $fileName,
                             'size' => $fileSize,
@@ -720,7 +739,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                     [
                         'result' => false,
                         'message' => sprintf(
-                            $this->l('Errore durante il caricamento del file: %s'),
+                            $this->trans('Errore durante il caricamento del file: %s'),
                             $result
                         ),
                     ]
@@ -766,7 +785,7 @@ class AdminMpSizeChartController extends ModuleAdminController
             $this->response(
                 [
                     'result' => true,
-                    'message' => $this->l('File caricato correttamente'),
+                    'message' => $this->trans('File caricato correttamente'),
                 ]
             );
         }
@@ -774,7 +793,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $this->response(
             [
                 'result' => false,
-                'message' => $this->l('Nessun file da caricare.'),
+                'message' => $this->trans('Nessun file da caricare.'),
             ]
         );
     }
@@ -879,7 +898,7 @@ class AdminMpSizeChartController extends ModuleAdminController
 
             if (!Validate::isLoadedObject($model)) {
                 $this->warnings[] = sprintf(
-                    $this->l('Allegato non trovato per il prodotto %s'),
+                    $this->trans('Allegato non trovato per il prodotto %s'),
                     $product->reference
                 );
 
@@ -891,7 +910,7 @@ class AdminMpSizeChartController extends ModuleAdminController
             try {
                 $model->delete();
                 $messages[] = sprintf(
-                    $this->l('Allegato %s rimosso per il prodotto %s'),
+                    $this->trans('Allegato %s rimosso per il prodotto %s'),
                     $attachment,
                     $product->reference
                 );

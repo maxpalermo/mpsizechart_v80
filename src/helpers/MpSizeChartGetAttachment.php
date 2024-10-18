@@ -42,6 +42,13 @@ class MpSizeChartGetAttachment
         return $file;
     }
 
+    public static function getAttachmentUrlFile($file)
+    {
+        $folder = self::getUploadFolder();
+
+        return $folder . $file;
+    }
+
     public static function getAttachmentList()
     {
         $folder = self::getUploadFolder(false);

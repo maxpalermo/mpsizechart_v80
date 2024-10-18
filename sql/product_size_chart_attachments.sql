@@ -20,8 +20,6 @@ SET
 --
 -- Struttura della tabella `{PREFIX}product_size_chart_attachment`
 --
-DROP TABLE IF EXISTS `{PREFIX}product_size_chart_attachment`;
-
 CREATE TABLE IF NOT EXISTS `{PREFIX}product_size_chart_attachment` (
     `id_product` int(11) NOT NULL AUTO_INCREMENT,
     `file_name` varchar(64) NOT NULL,
@@ -32,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `{PREFIX}product_size_chart_attachment` (
     `date_upd` datetime DEFAULT NULL,
     PRIMARY KEY (`id_product`),
     KEY `idx_filename` (`file_name`)
-) ENGINE = { ENGINE_TYPE } DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+) ENGINE = {ENGINE_TYPE} DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 SET
     FOREIGN_KEY_CHECKS = 1;

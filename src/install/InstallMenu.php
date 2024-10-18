@@ -133,7 +133,7 @@ class InstallMenu
      */
     public function installMenu(
         string $class_name,
-        string $name,
+        string|array $name,
         string $parent_class_name = 'DEFAULT',
         string $icon = '',
         string $route_name = '',
@@ -152,14 +152,16 @@ class InstallMenu
         }
 
         if (!is_array($name)) {
-            $name = [];
+            $multilang_name = [];
             foreach (\Language::getLanguages() as $lang) {
-                $name[$lang['id_lang']] = $name;
+                $multilang_name[$lang['id_lang']] = $name;
             }
         } else {
             foreach (\Language::getLanguages() as $lang) {
                 if (!isset($name[$lang['id_lang']])) {
-                    $name[$lang['id_lang']] = '--';
+                    $multilang_name[$lang['id_lang']] = '--';
+                } else {
+                    $multilang_name[$lang['id_lang']] = $name[$lang['id_lang']];
                 }
             }
         }
@@ -188,7 +190,7 @@ class InstallMenu
         $tab->name = [];
         foreach (\Language::getLanguages() as $lang) {
             $id_lang = (int) $lang['id_lang'];
-            $tab->name[$id_lang] = $name[$id_lang];
+            $tab->name[$id_lang] = $multilang_name[$id_lang];
         }
 
         return $tab->add();
