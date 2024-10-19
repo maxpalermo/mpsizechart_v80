@@ -17,19 +17,52 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License version 3.0
  */
 
+:root {
+    --mpsizechart-primary: #007bff;
+    --mpsizechart-secondary: #6c757d;
+    --mpsizechart-success: #28a745;
+    --mpsizechart-danger: #dc3545;
+    --mpsizechart-warning: #ffc107;
+    --mpsizechart-info: #17a2b8;
+    --mpsizechart-light: #f8f9fa;
+    --mpsizechart-dark: #343a40;
+    --mpsizechart-white: #fff;
+    --mpsizechart-black: #000;
+    --mpsizechart-gray: #6c757d;
+    --mpsizechart-gray-dark: #343a40;
+    --mpsizechart-gray-light: #f8f9fa;
+    --mpsizechart-gray-lighter: #f1f3f5;
+    --mpsizechart-gray-lightest: #f8f9fa;
+    --mpsizechart-orange: #f39d72;
+    --mpsizechart-orange-selected: #f37f45;
+    --mpsizechart-orange-dark: #c37d52;
+    --mpsizechart-orange-light: #f5b74c;
+    --mpsizechart-green: #5cb85c;
+    --mpsizechart-red: #d9534f;
+    --mpsizechart-blue: #5bc0de;
+    --mpsizechart-yellow: #f0ad4e;
+}
+
 #mpsizechart_button {
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
+    background-color: var(--mpsizechart-orange);
+    color: var(--mpsizechart-white);
+    border: 1px solid var(--mpsizechart-orange-dark);
     border-radius: 3px;
-    color: #333;
     cursor: pointer;
     display: inline-block;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 300;
     margin: 0;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
     transition: background-color 0.3s;
+}
+
+#mpsizechart_button:hover {
+    background-color: var(--mpsizechart-orange-selected);
+    border-color: var(--mpsizechart-orange);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.65);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
