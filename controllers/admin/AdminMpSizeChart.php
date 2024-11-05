@@ -495,14 +495,32 @@ class AdminMpSizeChartController extends ModuleAdminController
                         'is_bool' => true,
                         'values' => [
                             [
-                                'id' => 'chk_search_in',
+                                'id' => 'switch_only_attachments_yes',
                                 'value' => 1,
-                                'label' => $this->trans('Yes'),
+                                'label' => $this->trans('SI'),
                             ],
                             [
-                                'id' => 'chk_search_in',
+                                'id' => 'switch_only_attachments_no',
                                 'value' => 0,
-                                'label' => $this->trans('No'),
+                                'label' => $this->trans('NO'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->trans('Solo i prodotti senza allegati'),
+                        'name' => 'switch_no_attachments',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'switch_no_attachments_yes',
+                                'value' => 1,
+                                'label' => $this->trans('SI'),
+                            ],
+                            [
+                                'id' => 'switch_no_attachments_no',
+                                'value' => 0,
+                                'label' => $this->trans('NO'),
                             ],
                         ],
                     ],
@@ -522,6 +540,7 @@ class AdminMpSizeChartController extends ModuleAdminController
                         'class' => 'btn btn-default pull-left',
                         'name' => 'submitSearch',
                         'icon' => 'process-icon-cancel',
+                        'href' => $this->context->link->getAdminLink($this->controller_name, true, [], ['action' => 'resetSearchFilters']),
                     ],
                 ],
             ],
@@ -570,6 +589,8 @@ class AdminMpSizeChartController extends ModuleAdminController
         $fields['product_name'] = Tools::getValue('product_name', Configuration::get('MPSIZECHART_PRODUCT_NAME'));
         $fields['chk_search_in'] = Tools::getValue('chk_search_in', json_decode(Configuration::get('MPSIZECHART_CHK_SEARCH_IN'), true));
         $fields['switch_only_attachments'] = (int) Tools::getValue('switch_only_attachments', (int) Configuration::get('MPSIZECHART_SWITCH_ONLY_ATTACHMENTS'));
+        $fields['switch_no_attachments'] = (int) Tools::getValue('switch_no_attachments', (int) Configuration::get('MPSIZECHART_SWITCH_NO_ATTACHMENTS'));
+
         $fields['action'] = 'submitSearch';
 
         return $fields;
@@ -815,7 +836,25 @@ class AdminMpSizeChartController extends ModuleAdminController
         if (!Validate::isLoadedObject($image)) {
             return '';
         }
-        $url = $this->context->link->getImageLink($image->legend, $image->id, 'small_default');
+        $folders = Image::getImgFolderStatic($id_image);
+        $ssl = (int) Configuration::get('PS_SSL_ENABLED');
+        if ($ssl) {
+            $base = Tools::getShopDomainSsl(true);
+        } else {
+            $base = Tools::getShopDomain(true);
+        }
+
+        $base .= $this->context->shop->getBaseURI();
+
+        $filename = _PS_IMG_DIR_ . 'p/' . $folders . $id_image . '-small_default';
+
+        if (!file_exists($filename . '.jpg')) {
+            $filename .= '.png';
+        } else {
+            $filename .= '.jpg';
+        }
+
+        $url = $base . 'img/p/' . $folders . basename($filename);
         $html = "<img src=\"{$url}\" class=\"thumbnal\" style=\"max-width: 100px; object-fit: contain;\">";
 
         return $html;
@@ -829,8 +868,9 @@ class AdminMpSizeChartController extends ModuleAdminController
         $product_name = Configuration::get('MPSIZECHART_PRODUCT_NAME');
         $chk_search_in = json_decode(Configuration::get('MPSIZECHART_CHK_SEARCH_IN'), true);
         $only_attachments = (int) Configuration::get('MPSIZECHART_SWITCH_ONLY_ATTACHMENTS');
+        $no_attachments = (int) Configuration::get('MPSIZECHART_SWITCH_NO_ATTACHMENTS');
 
-        $this->filterProducts($categories, $manufacturers, $suppliers, $product_name, $chk_search_in, $only_attachments);
+        $this->filterProducts($categories, $manufacturers, $suppliers, $product_name, $chk_search_in, $only_attachments, $no_attachments);
     }
 
     function processSubmitSearch()
@@ -841,6 +881,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $product_name = Tools::getValue('product_name', '');
         $chk_search_in = Tools::getValue('search_in', []);
         $only_attachments = (int) Tools::getValue('switch_only_attachments', 0);
+        $no_attachments = (int) Tools::getValue('switch_no_attachments', 0);
 
         Configuration::updateValue('MPSIZECHART_CATEGORIES', json_encode($categories));
         Configuration::updateValue('MPSIZECHART_MANUFACTURERS', json_encode($manufacturers));
@@ -848,9 +889,23 @@ class AdminMpSizeChartController extends ModuleAdminController
         Configuration::updateValue('MPSIZECHART_PRODUCT_NAME', $product_name);
         Configuration::updateValue('MPSIZECHART_CHK_SEARCH_IN', json_encode($chk_search_in));
         Configuration::updateValue('MPSIZECHART_SWITCH_ONLY_ATTACHMENTS', (int) $only_attachments);
+        Configuration::updateValue('MPSIZECHART_SWITCH_NO_ATTACHMENTS', (int) $no_attachments);
     }
 
-    public function filterProducts($categories, $manufacturers, $suppliers, $product_name, $chk_search_in, $only_attachments)
+    public function processResetSearchFilters()
+    {
+        Configuration::updateValue('MPSIZECHART_CATEGORIES', json_encode([]));
+        Configuration::updateValue('MPSIZECHART_MANUFACTURERS', json_encode([]));
+        Configuration::updateValue('MPSIZECHART_SUPPLIERS', json_encode([]));
+        Configuration::updateValue('MPSIZECHART_PRODUCT_NAME', '');
+        Configuration::updateValue('MPSIZECHART_CHK_SEARCH_IN', json_encode([]));
+        Configuration::updateValue('MPSIZECHART_SWITCH_ONLY_ATTACHMENTS', 0);
+        Configuration::updateValue('MPSIZECHART_SWITCH_NO_ATTACHMENTS', 0);
+
+        $this->confirmations[] = $this->trans('Filtri di ricerca resettati');
+    }
+
+    public function filterProducts($categories, $manufacturers, $suppliers, $product_name, $chk_search_in, $only_attachments, $no_attachments)
     {
         if ($categories) {
             $cat_list = implode(',', array_map('intval', $categories));
@@ -884,8 +939,10 @@ class AdminMpSizeChartController extends ModuleAdminController
                 $this->_where .= ' AND b.meta_keywords LIKE \'%' . pSQL($product_name) . '%\'';
             }
         }
-        if ($only_attachments) {
+        if ($only_attachments && !$no_attachments) {
             $this->_where .= ' AND m.id_product IS NOT NULL';
+        } elseif (!$only_attachments && $no_attachments) {
+            $this->_where .= ' AND m.id_product IS NULL';
         }
     }
 
