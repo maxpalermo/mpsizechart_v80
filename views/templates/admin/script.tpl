@@ -259,9 +259,8 @@
                         jAlert(response.error);
                         return;
                     }
-                    jAlert('Allegato salvato con successo. Attendere che la pagina si ricarichi.');
+                    jAlert('Allegato salvato con successo. Per vedere le modifiche aggiorna la pagina.');
                     $("#attachmentModal").modal("hide");
-                    window.location.reload();
                 },
                 error: function() {
                     jAlert('Errore durante il salvataggio dell\'allegato.');

@@ -13,16 +13,36 @@
     },
     "autoload": {
         "psr-4": {
-            "MpSoft\\MpSizeChart\\": "src/",
-            "MpSoft\\MpSizeChart\\Plugins\\": "plugins/"
+            "MpSoft\\MpSizeChart\\": "src/"
         },
         "classmap": [],
         "exclude-from-classmap": [],
         "files": []
     },
+    "scripts": {
+        "test": "phpunit",
+        "cs-fix": "php-cs-fixer fix"
+    },
     "config": {
+        "platform": {
+            "php": "8.1"
+        },
         "preferred-install": "dist",
         "prepend-autoloader": false
     },
-    "type": "prestashop-module"
+    "type": "prestashop-module",
+    "extra": {
+        "module": {
+            "name": "Mostra un PDF delle taglie nella pagina prodotti",
+            "version": "1.0.0",
+            "author": "Massimiliano Palermo",
+            "author_email": "maxx.palermo@gmail.com",
+            "author_url": "https://www.prestashop.maxpalermo.it",
+            "license": "AFL-3.0",
+            "url": "https://www.prestashop.maxpalermo.it",
+            "readme": "README.md"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
