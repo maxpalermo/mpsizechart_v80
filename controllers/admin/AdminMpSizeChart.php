@@ -55,6 +55,7 @@ class AdminMpSizeChartController extends ModuleAdminController
 
         $this->id_lang = (int) ContextCore::getContext()->language->id;
         $this->id_shop = (int) ContextCore::getContext()->shop->id;
+        $this->initList();
     }
 
     public function setMedia($isNewTheme = false)
@@ -80,7 +81,7 @@ class AdminMpSizeChartController extends ModuleAdminController
         $this->getFilters();
         $this->errors = [];
         $this->messages = [];
-        $this->content = $this->initFormSearch() . $this->initList() . $this->initScript();
+        $this->content = $this->initFormSearch() . $this->initScript();
         parent::initContent();
     }
 
@@ -336,14 +337,14 @@ class AdminMpSizeChartController extends ModuleAdminController
             ],
             'reference' => [
                 'title' => $this->trans('Riferimento'),
-                'filter_key' => 'p!reference',
+                'filter_key' => 'a!reference',
             ],
             'price' => [
                 'title' => $this->trans('Prezzo'),
                 'type' => 'price',
                 'currency' => true,
                 'align' => 'right',
-                'filter_key' => 'p!price',
+                'filter_key' => 'a!price',
                 'class' => 'fixed-width-sm text-right',
             ],
             'active' => [
@@ -355,8 +356,8 @@ class AdminMpSizeChartController extends ModuleAdminController
             ],
             'file_name' => [
                 'title' => $this->trans('File'),
-                'orderby' => false,
-                'search' => false,
+                'orderby' => true,
+                'search' => true,
                 'float' => true,
                 'class' => 'text-center',
                 'filter_key' => 'm!file_name',
